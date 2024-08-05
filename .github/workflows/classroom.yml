@@ -1,0 +1,46 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: compilation
+      id: compilation
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: compilation
+        setup-command: ''
+        command: cat ./tests/score_compilation
+        input: ''
+        expected-output: '20'
+        comparison-method: exact
+        timeout: 10
+        max-score: 2
+    - name: analyse
+      id: analyse
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: analyse
+        setup-command: ''
+        command: cat ./tests/score_analyse
+        input: ''
+        expected-output: '1'
+        comparison-method: exact
+        timeout: 10
+        max-score: 3
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        COMPILATION_RESULTS: "${{steps.compilation.outputs.result}}"
+        ANALYSE_RESULTS: "${{steps.analyse.outputs.result}}"
+      with:
+        runners: compilation,analyse
